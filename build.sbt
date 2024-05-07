@@ -14,8 +14,12 @@ resolvers += "HMRC-open-artefacts-maven2" at "https://open.artefacts.tax.service
 libraryDependencies ++= Seq(
   "uk.gov.hmrc.mongo"      %% "hmrc-mongo-play-28"   % "0.63.0",
   guice,
+  ws,
   "org.scalatest"          %% "scalatest"               % "3.2.15"             % Test,
   "org.scalamock"          %% "scalamock"               % "5.2.0"             % Test,
-  "org.scalatestplus.play" %% "scalatestplus-play"   % "5.1.0"          % Test
+  "org.scalatestplus.play" %% "scalatestplus-play"   % "5.1.0"          % Test,
+  "org.typelevel"          %% "cats-core"               % "2.3.0"
 )
+
+
 
