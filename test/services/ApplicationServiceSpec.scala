@@ -16,7 +16,7 @@ import scala.tools.nsc.interactive.Response
 
 class ApplicationServiceSpec extends BaseSpec with MockFactory with ScalaFutures with GuiceOneAppPerSuite {
 
-  val mockConnector = mock[LibraryConnector]
+  val mockConnector: LibraryConnector = mock[LibraryConnector]
   implicit val executionContext: ExecutionContext = app.injector.instanceOf[ExecutionContext]
   val testService = new ApplicationService(mockConnector)
 

@@ -28,14 +28,14 @@ class ApplicationController @Inject()(
 
   def read(id: String): Action[AnyContent] = Action.async { implicit request =>
     repository.read(id).map {
-      case (item: DataModel) => Ok{Json.toJson(item)}
+      case item: DataModel => Ok{Json.toJson(item)}
       case _ => NotFound(Json.obj("error" -> "Item not found"))
     }
   }
 
   def readByName(name: String): Action[AnyContent] = Action.async { implicit request =>
     repository.readByName(name).map {
-      case (item: DataModel) => Ok{Json.toJson(item)}
+      case item: DataModel => Ok{Json.toJson(item)}
       case _ => NotFound(Json.obj("error" -> "Item not found"))
     }
   }
