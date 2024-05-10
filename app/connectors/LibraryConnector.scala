@@ -15,7 +15,7 @@ class LibraryConnector @Inject()(ws: WSClient) {
       response
         .map {
           result =>
-            Right(result.json.as[Response])
+            Right(result.json.as[Response]) // at some point convert to data model, somewhere in code
         }
         .recover { case _: WSResponse =>
           Left(APIError.BadAPIResponse(500, "Could not connect"))

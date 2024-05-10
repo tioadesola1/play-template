@@ -1,8 +1,9 @@
 package services
 
 import baseSpec.BaseSpec
+import cats.data.EitherT
 import connectors.LibraryConnector
-import models.{DataModel, GoogleBook}
+import models.{APIError, DataModel, GoogleBook}
 import models.GoogleBook.formats
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.concurrent.ScalaFutures
@@ -15,7 +16,7 @@ import scala.tools.nsc.interactive.Response
 
 class ApplicationServiceSpec extends BaseSpec with MockFactory with ScalaFutures with GuiceOneAppPerSuite {
 
-  val mockConnector = mock[LibraryConnector]
+  val mockConnector: LibraryConnector = mock[LibraryConnector]
   implicit val executionContext: ExecutionContext = app.injector.instanceOf[ExecutionContext]
   val testService = new ApplicationService(mockConnector)
 
@@ -30,16 +31,13 @@ class ApplicationServiceSpec extends BaseSpec with MockFactory with ScalaFutures
     val url: String = "testUrl"
 
     "return a book" in {
-      (mockConnector.get[DataModel](_: "testUrl")(_: OFormat[DataModel], _: ExecutionContext))
-        .expects(*, *, *)
-        .returning(Future.successful(gameOfThrones.as[DataModel]))
+      (mockConnector.get[DataModel](_: String)(_: OFormat[DataModel], _: ExecutionContext))
+        .expects(url, *, *)
+        .returning(EitherT.rightT(gameOfThrones.as[DataModel]))
         .once()
 
-      val result: Future[Option[DataModel]] = testService.getGoogleBook(urlOverride = Some(url), search = "", term = "").map(Some(_))
-
-      // Assert the result using whenReady
-      whenReady(result) { res =>
-        res shouldBe Some(gameOfThrones.as[DataModel])
+      whenReady(testService.getGoogleBook(urlOverride = Some(url), search = "", term = "").value) { result =>
+        result shouldBe Right(gameOfThrones.as[DataModel])
       }
     }
 
@@ -47,19 +45,18 @@ class ApplicationServiceSpec extends BaseSpec with MockFactory with ScalaFutures
       val url: String = "testUrl"
       val errorMessage: String = "Something isn't right here"
 
-      (mockConnector.get[DataModel](_: "testUrl")(_: OFormat[DataModel], _: ExecutionContext))
-        .expects(*, *, *)
-        .returning(Future.failed(new Exception(errorMessage)))// How do we return an error?
+      (mockConnector.get[DataModel](_: String)(_: OFormat[DataModel], _: ExecutionContext))
+        .expects(url, *, *)
+        .returning(EitherT.leftT[Future, DataModel](APIError.BadAPIResponse(500, "Could not connect"))) // How do we return an error?
         .once()
 
-      val result: Future[Option[DataModel]] = testService.getGoogleBook(urlOverride = Some(url), search = "", term = "").map(Some(_))
-
-      whenReady(result.failed) { throwable =>
-        throwable shouldBe a[Exception] // Check if the result is an Exception
-        throwable.getMessage shouldBe errorMessage // Check if the error message matches expected
+      whenReady(testService.getGoogleBook(urlOverride = Some(url), search = "", term = "").value) { result =>
+        result shouldBe Left(APIError.BadAPIResponse(500, "Could not connect"))
       }
-
     }
 
+
+
+    //What it's doing and what its returning
   }
 }
