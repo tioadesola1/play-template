@@ -5,7 +5,7 @@ ThisBuild / scalaVersion := "2.13.8"
 
 lazy val root = (project in file("."))
   .settings(
-    name := "some_project_name"
+    name := "play-template"
   )
   .enablePlugins(PlayScala)
 
@@ -18,8 +18,9 @@ libraryDependencies ++= Seq(
   "org.scalatest"          %% "scalatest"               % "3.2.15"             % Test,
   "org.scalamock"          %% "scalamock"               % "5.2.0"             % Test,
   "org.scalatestplus.play" %% "scalatestplus-play"   % "5.1.0"          % Test,
-  "org.typelevel"          %% "cats-core"               % "2.3.0"
 )
+
+libraryDependencies += ("org.typelevel"                %% "cats-core"                 % "2.3.0")
 
 
 

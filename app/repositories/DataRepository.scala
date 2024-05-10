@@ -40,8 +40,19 @@ class DataRepository @Inject()(mongoComponent: MongoComponent
       Filters.equal("_id", id)
     )
 
+  private def byName(name: String): Bson =
+    Filters.and(
+      Filters.equal("name", name)
+    )
+
   def read(id: String): Future[DataModel] =
     collection.find(byID(id)).headOption flatMap {
+      case Some(data) =>
+        Future(data)
+    }
+
+  def readByName(name: String): Future[DataModel] =
+    collection.find(byName(name)).headOption flatMap {
       case Some(data) =>
         Future(data)
     }
@@ -51,6 +62,13 @@ class DataRepository @Inject()(mongoComponent: MongoComponent
       filter = byID(id),
       replacement = book,
       options = new ReplaceOptions().upsert(true) //What happens when we set this to false?
+    ).toFuture()
+
+  def newUpdate(id: String, name: String): Future[result.UpdateResult] =
+    collection.updateOne(
+      filter = byID(id),
+      update = byName(name),
+      options = new UpdateOptions().upsert(true) //What happens when we set this to false?
     ).toFuture()
 
   def delete(id: String): Future[result.DeleteResult] =
