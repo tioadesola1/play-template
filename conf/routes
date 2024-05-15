@@ -14,6 +14,6 @@ GET     /read/:name        controllers.ApplicationController.readByName(name: St
 
 PUT     /update/:id        controllers.ApplicationController.update(id: String)
 
-PUT     /update/:id        controllers.ApplicationController.update(id: String)
-
 DELETE  /delete/:id        controllers.ApplicationController.delete(id: String)
+
+

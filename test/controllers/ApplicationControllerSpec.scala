@@ -15,7 +15,7 @@ import scala.concurrent.Future
 
 class ApplicationControllerSpec extends BaseSpecWithApplication {
 
-  val TestApplicationController = new ApplicationController(component, repository, service)
+  val TestApplicationController = new ApplicationController(component, repository, repoService, service)
 
   private val dataModel: DataModel = DataModel(
     "abcd",
@@ -38,12 +38,11 @@ class ApplicationControllerSpec extends BaseSpecWithApplication {
       val result = TestApplicationController.index()(FakeRequest())
       status(result) shouldBe Status.OK
     }
-    //afterEach()
   }
 
 
   "ApplicationController .create" should {
-    //beforeEach()
+
     "create a book in the database" in {
 
       val requestPost: FakeRequest[JsValue] = buildPost("/create").withBody[JsValue](Json.toJson(dataModel))
@@ -55,7 +54,6 @@ class ApplicationControllerSpec extends BaseSpecWithApplication {
       status(readResult) shouldBe Status.OK
       status(createdResult) shouldBe Status.CREATED
     }
-    //afterEach()
   }
 
   "ApplicationController .read()" should {
@@ -69,13 +67,8 @@ class ApplicationControllerSpec extends BaseSpecWithApplication {
       val request: FakeRequest[JsValue] = buildGet("/read/abcd").withBody[JsValue](Json.toJson(dataModel))
       val readResult = TestApplicationController.read("abcd")(request)
 
-      //Hint: You could use status(createdResult) shouldBe Status.CREATED to check this has worked again
-
       status(readResult) shouldBe Status.OK
       contentAsJson(readResult) shouldBe Json.toJson(dataModel)
-
-      //Ask for further clarification why it is DataModel
-      //afterEach()
     }
     "find book in the database by name" in {
 
@@ -85,8 +78,6 @@ class ApplicationControllerSpec extends BaseSpecWithApplication {
 
       val request: FakeRequest[JsValue] = buildGet("/read/test name").withBody[JsValue](Json.toJson(dataModel))
       val readResult = TestApplicationController.readByName("test name")(request)
-
-      //Hint: You could use status(createdResult) shouldBe Status.CREATED to check this has worked again
 
       status(readResult) shouldBe Status.OK
       contentAsJson(readResult) shouldBe Json.toJson(dataModel)
@@ -104,8 +95,6 @@ class ApplicationControllerSpec extends BaseSpecWithApplication {
       val createdResult: Future[Result] = TestApplicationController.create()(requestPost)
 
       status(createdResult) shouldBe Status.CREATED
-
-      //Hint: You could use status(createdResult) shouldBe Status.CREATED to check this has worked again
 
       val updatedResult: Future[Result] = TestApplicationController.update("abcd")(requestPut)
 
@@ -143,14 +132,12 @@ class ApplicationControllerSpec extends BaseSpecWithApplication {
       val updatedResult: Future[Result] = TestApplicationController.update("abcd")(requestPut)
 
       status(updatedResult) shouldBe Status.BAD_REQUEST
-      //contentAsJson(updatedResult).as[DataModel] shouldBe dataModel
 
     }
   }
 
 
   "ApplicationController .delete()" should {
-    //beforeEach()
 
     "delete an item in the database by id" in {
 
@@ -161,14 +148,9 @@ class ApplicationControllerSpec extends BaseSpecWithApplication {
       val request: FakeRequest[JsValue] = buildDelete("/delete/abcd").withBody[JsValue](Json.toJson(dataModel))
       val deletedResult: Future[Result] = TestApplicationController.delete("abcd")(request)
 
-      //Hint: You could use status(createdResult) shouldBe Status.CREATED to check this has worked again
-
-
       status(deletedResult) shouldBe Status.ACCEPTED
-      //contentAsJson(deletedResult).as[DataModel] shouldBe ACCEPTED
-      //afterEach()
     }
-    //afterEach()
+
 
   }
 

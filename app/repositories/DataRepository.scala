@@ -3,6 +3,7 @@ package repositories
 import models.{APIError, DataModel}
 import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model.Filters.empty
+import org.mongodb.scala.model.Updates.set
 import org.mongodb.scala.model._
 import org.mongodb.scala.result
 import uk.gov.hmrc.mongo.MongoComponent
@@ -23,17 +24,49 @@ class DataRepository @Inject()(mongoComponent: MongoComponent
   replaceIndexes = false
 ) {
 
-  def index(): Future[Either[APIError.BadAPIResponse, Seq[DataModel]]] =
+  def index(): Future[Either[APIError.BadAPIResponse, Seq[DataModel]]] = {
     collection.find().toFuture().map {
       case books: Seq[DataModel] => Right(books)
       case _ => Left(APIError.BadAPIResponse(404, "Books cannot be found"))
     }
+  }
 
-  def create(book: DataModel): Future[DataModel] =
+  def create(book: DataModel): Future[Either[APIError.BadAPIResponse, DataModel]] = {
     collection
       .insertOne(book)
       .toFuture()
-      .map(_ => book)
+      .map(_ => book).map {
+        case book => Right(book)
+        case _ => Left(APIError.BadAPIResponse(500, "Failed to insert data"))
+      }
+  }
+  def update(id: String, book: DataModel): Future[Either[APIError.BadAPIResponse, result.UpdateResult]] =
+    collection.replaceOne(
+      filter = byID(id),
+      replacement = book,
+      options = new ReplaceOptions().upsert(true) //What happens when we set this to false?
+    ).toFuture().map {
+      case updatedBook => Right(updatedBook)
+      case _ => Left(APIError.BadAPIResponse(500, "Failed to insert data"))
+    }
+
+  def newUpdate(id: String, name: String): Future[Either[APIError.BadAPIResponse, result.UpdateResult]] =
+    collection.updateOne(
+      filter = byID(id),
+      update = set("name", name),
+      options = new UpdateOptions().upsert(true) //What happens when we set this to false?
+    ).toFuture().map {
+      case updatedBook => Right(updatedBook)
+      case _ => Left(APIError.BadAPIResponse(500, "Failed to insert data"))
+    }
+
+  def delete(id: String): Future[Either[APIError.BadAPIResponse,result.DeleteResult]] =
+    collection.deleteOne(
+      filter = byID(id)
+    ).toFuture().map {
+      case deletedBook => Right(deletedBook)
+      case _ => Left(APIError.BadAPIResponse(500, "Failed to delete data"))
+    }
 
   private def byID(id: String): Bson =
     Filters.and(
@@ -45,36 +78,21 @@ class DataRepository @Inject()(mongoComponent: MongoComponent
       Filters.equal("name", name)
     )
 
-  def read(id: String): Future[DataModel] =
+  def read(id: String): Future[Either[APIError.BadAPIResponse, DataModel]] =
     collection.find(byID(id)).headOption flatMap {
       case Some(data) =>
-        Future(data)
+        Future.successful(Right(data))
+      case _ =>
+        Future.successful(Left(APIError.BadAPIResponse(404, "Books cannot be found")))
     }
 
-  def readByName(name: String): Future[DataModel] =
+  def readByName(name: String): Future[Either[APIError.BadAPIResponse, DataModel]] =
     collection.find(byName(name)).headOption flatMap {
       case Some(data) =>
-        Future(data)
+        Future.successful(Right(data))
+      case _ =>
+        Future.successful(Left(APIError.BadAPIResponse(404, "Books cannot be found")))
     }
-
-  def update(id: String, book: DataModel): Future[result.UpdateResult] =
-    collection.replaceOne(
-      filter = byID(id),
-      replacement = book,
-      options = new ReplaceOptions().upsert(true) //What happens when we set this to false?
-    ).toFuture()
-
-  def newUpdate(id: String, name: String): Future[result.UpdateResult] =
-    collection.updateOne(
-      filter = byID(id),
-      update = byName(name),
-      options = new UpdateOptions().upsert(true) //What happens when we set this to false?
-    ).toFuture()
-
-  def delete(id: String): Future[result.DeleteResult] =
-    collection.deleteOne(
-      filter = byID(id)
-    ).toFuture()
 
   def deleteAll(): Future[Unit] = collection.deleteMany(empty()).toFuture().map(_ => ()) //Hint: needed for tests
 

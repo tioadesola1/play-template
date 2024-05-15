@@ -18,9 +18,12 @@ libraryDependencies ++= Seq(
   "org.scalatest"          %% "scalatest"               % "3.2.15"             % Test,
   "org.scalamock"          %% "scalamock"               % "5.2.0"             % Test,
   "org.scalatestplus.play" %% "scalatestplus-play"   % "5.1.0"          % Test,
+  "org.typelevel"                %% "cats-core"                 % "2.3.0",
+  "org.reactivemongo" %% "play2-reactivemongo" % "0.20.13-play28",
+
 )
 
-libraryDependencies += ("org.typelevel"                %% "cats-core"                 % "2.3.0")
+
 
 
 

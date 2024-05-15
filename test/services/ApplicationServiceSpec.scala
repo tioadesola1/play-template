@@ -55,8 +55,5 @@ class ApplicationServiceSpec extends BaseSpec with MockFactory with ScalaFutures
       }
     }
 
-
-
-    //What it's doing and what its returning
   }
 }
