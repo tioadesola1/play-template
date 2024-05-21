@@ -17,3 +17,12 @@ PUT     /update/:id        controllers.ApplicationController.update(id: String)
 DELETE  /delete/:id        controllers.ApplicationController.delete(id: String)
 
 
+GET  /api/github/users/:username  controllers.UserController.getUser(username: String)
+
+POST    /createUser         controllers.UserController.createUser()
+
+GET     /readUser/:username     controllers.UserController.readUser(username: String)
+
+PUT     /updateUser/:username   controllers.UserController.updateUser(username: String)
+
+DELETE  /deleteUser/:username   controllers.UserController.deleteUser(username: String)

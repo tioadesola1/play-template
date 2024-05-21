@@ -30,7 +30,6 @@ class DataRepository @Inject()(mongoComponent: MongoComponent
       case _ => Left(APIError.BadAPIResponse(404, "Books cannot be found"))
     }
   }
-
   def create(book: DataModel): Future[Either[APIError.BadAPIResponse, DataModel]] = {
     collection
       .insertOne(book)
