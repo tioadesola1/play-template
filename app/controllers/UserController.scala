@@ -24,12 +24,16 @@ class UserController @Inject()(
       case _ => NotFound(Json.obj("error" -> "User not found"))
     }
   }
+
   def readUser(username: String): Action[AnyContent] = Action.async { implicit request =>
     userRepository.readUser(username).map {
-      case Right(user: User) => Ok{Json.toJson(user)}
+      case Right(user: User) => Ok {
+        Json.toJson(user)
+      }
       case Left(error) => NotFound(Json.obj("error" -> "Item not found"))
     }
   }
+
   def createUser(): Action[JsValue] = Action.async(parse.json) { implicit request =>
     request.body.validate[User] match {
       case JsSuccess(users, _) =>
@@ -38,10 +42,22 @@ class UserController @Inject()(
       case JsError(_) => Future(BadRequest)
     }
   }
-  def updateUser(username: String): Action[AnyContent] = Action.async { implicit request =>
-    Future.successful(Ok(s"Update user: $username"))
+
+  def updateUser(username: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
+    request.body.validate[User] match {
+      case JsSuccess(user, _) =>
+        userRepository.updateUser(username, user)
+        Future(Accepted(Json.toJson(user)))
+      case JsError(_) => Future(BadRequest)
+    }
   }
-  def deleteUser(username: String): Action[AnyContent] = Action.async { implicit request =>
-    Future.successful(Ok(s"Delete user: $username"))
+
+  def deleteUser(username: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
+    request.body.validate[User] match {
+      case JsSuccess(user, _) =>
+        userRepository.deleteUser(username)
+        Future(Accepted(Json.toJson(user)))
+      case JsError(_) => Future(BadRequest)
+    }
   }
 }

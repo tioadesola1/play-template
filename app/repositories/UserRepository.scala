@@ -1,18 +1,14 @@
 package repositories
 
-import models.APIError
+import models.{APIError, DataModel, User}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
-import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
-import models.{APIError, DataModel, User}
 import org.mongodb.scala.bson.conversions.Bson
-import org.mongodb.scala.model.{Filters, IndexModel, Indexes}
-import uk.gov.hmrc.mongo.MongoComponent
-import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
+import org.mongodb.scala.model.{Filters, IndexModel, Indexes, ReplaceOptions}
+import org.mongodb.scala.result
 
 class UserRepository @Inject()(mongoComponent: MongoComponent
                               )(implicit ec: ExecutionContext)
@@ -34,19 +30,19 @@ class UserRepository @Inject()(mongoComponent: MongoComponent
     }
   }
 
-    def readUser(username: String): Future[Either[APIError.BadAPIResponse, User]] = {
-      collection.find(byUsername(username)).headOption flatMap {
-        case Some(data) =>
-          Future.successful(Right(data))
-        case _ =>
-          Future.successful(Left(APIError.BadAPIResponse(404, "Books cannot be found")))
-      }
+  def readUser(username: String): Future[Either[APIError.BadAPIResponse, User]] = {
+    collection.find(byUsername(username)).headOption flatMap {
+      case Some(data) =>
+        Future.successful(Right(data))
+      case _ =>
+        Future.successful(Left(APIError.BadAPIResponse(404, "Books cannot be found")))
     }
+  }
 
-    private def byUsername(username: String): Bson =
-      Filters.and(
-        Filters.equal("username", username)
-        )
+  private def byUsername(username: String): Bson =
+    Filters.and(
+      Filters.equal("username", username)
+    )
 
   def createUser(user: User): Future[Either[APIError.BadAPIResponse, User]] = {
     collection
@@ -57,14 +53,24 @@ class UserRepository @Inject()(mongoComponent: MongoComponent
         case _ => Left(APIError.BadAPIResponse(500, "Failed to insert data"))
       }
   }
-}
-//  def updateUser(username: String): Action[AnyContent] = Action.async { implicit request =>
-//    Future.successful(Ok(s"Update user: $username"))
-//  }
-//  def deleteUser(username: String): Action[AnyContent] = Action.async { implicit request =>
-//    Future.successful(Ok(s"Delete user: $username"))
-//  }
+  def updateUser(username: String, user: User): Future[Either[APIError.BadAPIResponse, result.UpdateResult]] =
+    collection.replaceOne(
+      filter = byUsername(username),
+      replacement = user,
+      options = new ReplaceOptions().upsert(true) //What happens when we set this to false?
+    ).toFuture().map {
+      case updatedUser => Right(updatedUser)
+      case _ => Left(APIError.BadAPIResponse(500, "Failed to insert data"))
+    }
 
+  def deleteUser(username: String): Future[Either[APIError.BadAPIResponse,result.DeleteResult]] =
+    collection.deleteOne(
+      filter = byUsername(username)
+    ).toFuture().map {
+      case deletedBook => Right(deletedBook)
+      case _ => Left(APIError.BadAPIResponse(500, "Failed to delete data"))
+    }
+}
 
 
 //  def ensureUniqueIndex(): Future[Boolean] = {

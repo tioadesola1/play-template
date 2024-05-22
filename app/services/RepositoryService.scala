@@ -1,25 +1,12 @@
 package services
 
 import models.DataModel
-import models.DataModel.formats
-import play.api.libs.json.Format.GenericFormat
-import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
-import play.api.mvc.Request
 import repositories.DataRepository
-import services.{ApplicationService, RepositoryService}
-
-import javax.inject._
-import scala.concurrent.{ExecutionContext, Future}
-import models.{APIError, DataModel}
-import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
-import play.api.mvc.{Action, Request, BaseController, Result}
-import repositories.DataRepository
-import play.api.mvc._
-
+import scala.concurrent.Future
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext.Implicits.global
 import org.mongodb.scala.result
-import scala.concurrent.Future
+
 
 class RepositoryService @Inject()(val repository: DataRepository) {
   def index(): Future[Either[String, Seq[DataModel]]] = {
