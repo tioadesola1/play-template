@@ -1,5 +1,6 @@
 package repositories
 
+import com.google.inject.ImplementedBy
 import models.{APIError, DataModel}
 import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model.Filters.empty
@@ -22,15 +23,15 @@ class DataRepository @Inject()(mongoComponent: MongoComponent
     Indexes.ascending("_id")
   )),
   replaceIndexes = false
-) {
+) with mockRepository {
 
-  def index(): Future[Either[APIError.BadAPIResponse, Seq[DataModel]]] = {
+  override def index(): Future[Either[APIError.BadAPIResponse, Seq[DataModel]]] = {
     collection.find().toFuture().map {
       case books: Seq[DataModel] => Right(books)
       case _ => Left(APIError.BadAPIResponse(404, "Books cannot be found"))
     }
   }
-  def create(book: DataModel): Future[Either[APIError.BadAPIResponse, DataModel]] = {
+  override def create(book: DataModel): Future[Either[APIError.BadAPIResponse, DataModel]] = {
     collection
       .insertOne(book)
       .toFuture()
@@ -39,7 +40,7 @@ class DataRepository @Inject()(mongoComponent: MongoComponent
         case _ => Left(APIError.BadAPIResponse(500, "Failed to insert data"))
       }
   }
-  def update(id: String, book: DataModel): Future[Either[APIError.BadAPIResponse, result.UpdateResult]] =
+  override def update(id: String, book: DataModel): Future[Either[APIError.BadAPIResponse, result.UpdateResult]] =
     collection.replaceOne(
       filter = byID(id),
       replacement = book,
@@ -49,7 +50,7 @@ class DataRepository @Inject()(mongoComponent: MongoComponent
       case _ => Left(APIError.BadAPIResponse(500, "Failed to insert data"))
     }
 
-  def newUpdate(id: String, name: String): Future[Either[APIError.BadAPIResponse, result.UpdateResult]] =
+  override def newUpdate(id: String, name: String): Future[Either[APIError.BadAPIResponse, result.UpdateResult]] =
     collection.updateOne(
       filter = byID(id),
       update = set("name", name),
@@ -59,7 +60,7 @@ class DataRepository @Inject()(mongoComponent: MongoComponent
       case _ => Left(APIError.BadAPIResponse(500, "Failed to insert data"))
     }
 
-  def delete(id: String): Future[Either[APIError.BadAPIResponse,result.DeleteResult]] =
+  override def delete(id: String): Future[Either[APIError.BadAPIResponse,result.DeleteResult]] =
     collection.deleteOne(
       filter = byID(id)
     ).toFuture().map {
@@ -77,7 +78,7 @@ class DataRepository @Inject()(mongoComponent: MongoComponent
       Filters.equal("name", name)
     )
 
-  def read(id: String): Future[Either[APIError.BadAPIResponse, DataModel]] =
+  override def read(id: String): Future[Either[APIError.BadAPIResponse, DataModel]] =
     collection.find(byID(id)).headOption flatMap {
       case Some(data) =>
         Future.successful(Right(data))
@@ -85,7 +86,7 @@ class DataRepository @Inject()(mongoComponent: MongoComponent
         Future.successful(Left(APIError.BadAPIResponse(404, "Books cannot be found")))
     }
 
-  def readByName(name: String): Future[Either[APIError.BadAPIResponse, DataModel]] =
+  override def readByName(name: String): Future[Either[APIError.BadAPIResponse, DataModel]] =
     collection.find(byName(name)).headOption flatMap {
       case Some(data) =>
         Future.successful(Right(data))
@@ -94,6 +95,18 @@ class DataRepository @Inject()(mongoComponent: MongoComponent
     }
 
   def deleteAll(): Future[Unit] = collection.deleteMany(empty()).toFuture().map(_ => ()) //Hint: needed for tests
+
+}
+
+@ImplementedBy(classOf[DataRepository])
+trait mockRepository {
+  def index(): Future[Either[APIError.BadAPIResponse, Seq[DataModel]]]
+  def create(book: DataModel): Future[Either[APIError.BadAPIResponse, DataModel]]
+  def update(id: String, book: DataModel): Future[Either[APIError.BadAPIResponse, result.UpdateResult]]
+  def newUpdate(id: String, name: String): Future[Either[APIError.BadAPIResponse, result.UpdateResult]]
+  def delete(id: String): Future[Either[APIError.BadAPIResponse,result.DeleteResult]]
+  def read(id: String): Future[Either[APIError.BadAPIResponse, DataModel]]
+  def readByName(name: String): Future[Either[APIError.BadAPIResponse, DataModel]]
 
 }
 

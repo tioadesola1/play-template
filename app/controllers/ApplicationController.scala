@@ -5,7 +5,7 @@ import models.DataModel.formats
 import play.api.libs.json.Format.GenericFormat
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 import play.api.mvc._
-import repositories.DataRepository
+import repositories.{DataRepository, mockRepository}
 import services.{ApplicationService, RepositoryService}
 
 import javax.inject._
@@ -15,7 +15,7 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class ApplicationController @Inject()(
    val controllerComponents: ControllerComponents,
-   val repository: DataRepository,
+   val mockRepository: mockRepository,
    val repoService: RepositoryService,
    val service: ApplicationService)
    (implicit val ec: ExecutionContext) extends BaseController {

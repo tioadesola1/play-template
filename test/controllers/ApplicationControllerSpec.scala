@@ -9,13 +9,15 @@ import models.{DataModel, GoogleBook}
 import play.api.libs.json.Format.GenericFormat
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
+import repositories.{DataRepository, mockRepository}
+import org.scalamock.scalatest.MockFactory
 
 import scala.concurrent.Future
 
 
 class ApplicationControllerSpec extends BaseSpecWithApplication {
 
-  val TestApplicationController = new ApplicationController(component, repository, repoService, service)
+  val TestApplicationController = new ApplicationController(component, mockRepository, repoService, service)
 
   private val dataModel: DataModel = DataModel(
     "abcd",

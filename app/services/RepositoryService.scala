@@ -1,14 +1,15 @@
 package services
 
 import models.DataModel
-import repositories.DataRepository
+import repositories.{DataRepository, mockRepository}
+
 import scala.concurrent.Future
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext.Implicits.global
 import org.mongodb.scala.result
 
 
-class RepositoryService @Inject()(val repository: DataRepository) {
+class RepositoryService @Inject()(val repository: mockRepository) {
   def index(): Future[Either[String, Seq[DataModel]]] = {
     repository.index().map {
       case Right(item) => Right(item)

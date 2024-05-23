@@ -7,7 +7,7 @@ import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import scala.concurrent.{ExecutionContext, Future}
 import javax.inject.Inject
 import org.mongodb.scala.bson.conversions.Bson
-import org.mongodb.scala.model.{Filters, IndexModel, Indexes, ReplaceOptions}
+import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions, Indexes, ReplaceOptions}
 import org.mongodb.scala.result
 
 class UserRepository @Inject()(mongoComponent: MongoComponent
@@ -17,7 +17,7 @@ class UserRepository @Inject()(mongoComponent: MongoComponent
   mongoComponent = mongoComponent,
   domainFormat = User.formats,
   indexes = Seq(IndexModel(
-    Indexes.ascending("_id")
+    Indexes.ascending("_id"),
   )),
   replaceIndexes = false
 ) {
